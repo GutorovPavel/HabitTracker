@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.habittracker.domain.models.Habit
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -18,12 +19,12 @@ interface HabitsDao {
     @Delete
     suspend fun deleteHabit(habit: Habit)
 
-    @Update
-    suspend fun updateHabit(habit: Habit)
+    @Query("UPDATE habit SET days = days + 1 WHERE id LIKE :id")
+    suspend fun updateHabit(id: Int)
 
     @Query("SELECT * FROM habit WHERE id = :id")
     suspend fun getHabitById(id: Int): Habit?
 
     @Query("SELECT * FROM habit")
-    suspend fun getAllHabits(): List<Habit>
+    fun getAllHabits(): Flow<List<Habit>>
 }

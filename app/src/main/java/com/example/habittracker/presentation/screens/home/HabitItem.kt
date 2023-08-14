@@ -1,6 +1,7 @@
 package com.example.habittracker.presentation.screens.home
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,20 +21,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.habittracker.domain.models.Habit
 
 @Composable
 fun HabitItem(
-    title: String,
-    days: Int = 0,
-    notifyTime: String? = "",
-    daysGoal: Int,
-    status: String,
+    habit: Habit,
+    onClick: (Habit) -> Unit
 ) {
     Card (
         colors = CardDefaults.cardColors(
             containerColor = Color.White,
         ),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = Modifier.clickable { onClick(habit) }
     ) {
         Column(
             modifier = Modifier
@@ -47,12 +47,12 @@ fun HabitItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = title,
+                    text = habit.title,
                     style = MaterialTheme.typography.h6,
                     fontWeight = FontWeight.Bold
                 )
-                if (notifyTime != null) {
-                    Text(text = notifyTime)
+                if (habit.notifyTime != null) {
+                    Text(text = habit.notifyTime)
                 }
             }
             Row(
@@ -66,7 +66,7 @@ fun HabitItem(
                         style = MaterialTheme.typography.body2
                     )
                     Text(
-                        text = "$days/$daysGoal",
+                        text = "${habit.days}/${habit.daysGoal}",
 //                        fontWeight = FontWeight.Medium,
                         style = MaterialTheme.typography.subtitle2
                     )
@@ -79,7 +79,7 @@ fun HabitItem(
                         style = MaterialTheme.typography.body2
                     )
                     Text(
-                        text = status,
+                        text = habit.status,
 //                        fontWeight = FontWeight.Medium,
                         style = MaterialTheme.typography.subtitle2
                     )
@@ -89,14 +89,8 @@ fun HabitItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp),
-                progress = (days.toFloat()/daysGoal.toFloat())
+                progress = (habit.days.toFloat()/habit.daysGoal.toFloat())
             )
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewHabitItem() {
-//    HabitItem()
-//}

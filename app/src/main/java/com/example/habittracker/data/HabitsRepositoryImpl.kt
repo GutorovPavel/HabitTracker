@@ -3,6 +3,7 @@ package com.example.habittracker.data
 import com.example.habittracker.data.local.db.HabitsDao
 import com.example.habittracker.domain.models.Habit
 import com.example.habittracker.domain.repository.HabitsRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class HabitsRepositoryImpl @Inject constructor(
@@ -16,15 +17,15 @@ class HabitsRepositoryImpl @Inject constructor(
         dao.deleteHabit(habit)
     }
 
-    override suspend fun updateHabit(habit: Habit) {
-        dao.updateHabit(habit)
+    override suspend fun updateHabit(id: Int) {
+        dao.updateHabit(id)
     }
 
     override suspend fun getHabitById(id: Int): Habit? {
         return dao.getHabitById(id)
     }
 
-    override suspend fun getAllHabits(): List<Habit> {
+    override fun getAllHabits(): Flow<List<Habit>> {
         return dao.getAllHabits()
     }
 }

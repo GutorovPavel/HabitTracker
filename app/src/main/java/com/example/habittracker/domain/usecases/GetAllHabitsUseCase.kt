@@ -7,17 +7,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class GetAllHabitsUseCase (
+class GetAllHabitsUseCase @Inject constructor (
     private val repository: HabitsRepository
-){
-    operator fun invoke(): Flow<Resource<List<Habit>>> = flow {
+) {
+    operator fun invoke(): Flow<List<Habit>>  {
 
-        try {
-            emit(Resource.Loading())
-            val habits = repository.getAllHabits()
-            emit(Resource.Success(habits))
-        } catch (e: Exception) {
-            emit(Resource.Error(e.message))
-        }
+        return repository.getAllHabits()
     }
 }

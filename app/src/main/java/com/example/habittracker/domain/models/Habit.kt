@@ -1,9 +1,12 @@
 package com.example.habittracker.domain.models
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.habittracker.util.HabitStatus
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 @Entity
 data class Habit(
     @PrimaryKey(autoGenerate = true)
@@ -13,4 +16,4 @@ data class Habit(
     val daysGoal: Int,
     val notifyTime: String? = "",
     val status: String = HabitStatus.Active.status
-)
+): Parcelable

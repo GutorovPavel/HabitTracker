@@ -4,7 +4,7 @@ import com.example.habittracker.domain.models.Habit
 import com.example.habittracker.domain.repository.HabitsRepository
 import javax.inject.Inject
 
-class AddHabitUseCase (
+class AddHabitUseCase @Inject constructor (
     private val repository: HabitsRepository
 ) {
 

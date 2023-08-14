@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
@@ -47,6 +49,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.habittracker.presentation.navigation.Screen
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -73,13 +77,15 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
 
-    val data = viewModel.state.value
+//    val data = viewModel.state.value
     val habits = viewModel.habits.collectAsState()
 
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+
+    val lazyListState = rememberLazyListState()
 
     var showSheet by remember {
         mutableStateOf(false)
@@ -91,7 +97,7 @@ fun HomeScreen(
                  title = {
                      Text(
                          text = "Мои привычки",
-                         style = androidx.compose.material.MaterialTheme.typography.h6,
+                         style = MaterialTheme.typography.headlineSmall,
                          fontWeight = FontWeight.Medium,
                      )
                  },
@@ -114,7 +120,7 @@ fun HomeScreen(
             )
         },
         floatingActionButtonPosition = FabPosition.Center
-    ) {
+    ) { paddingValues ->
         if (showSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showSheet = false },
@@ -130,6 +136,9 @@ fun HomeScreen(
                                 showSheet = false
                             }
                         }
+                    },
+                    onAdd = {
+                        viewModel.addHabit()
                     }
                 )
             }
@@ -139,31 +148,30 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter
         ) {
-            if (data.isLoading) {
-                CircularProgressIndicator()
-            } else {
-                Column(
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .background(MaterialTheme.colorScheme.background),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight()
+                        .weight(12f)
                         .background(MaterialTheme.colorScheme.background),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    contentPadding = PaddingValues(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    reverseLayout = true,
+                    state = lazyListState
                 ) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(12f)
-                            .background(MaterialTheme.colorScheme.background),
-                        contentPadding = PaddingValues(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        item {
-                            Spacer(modifier = Modifier.height(70.dp))
-                        }
-                        items(
-                            items = habits.value,
-                            key = { habit -> habit.id.toString() }) { habit ->
-                            val dismissState = rememberDismissState(
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
+                    items(
+                        items = habits.value,
+                        key = { habit -> habit.id.toString() }) { habit ->
+                        val dismissState = rememberDismissState(
 //                                confirmStateChange = {
 //                                    when(it) {
 //                                        DismissValue.DismissedToStart -> {
@@ -174,85 +182,86 @@ fun HomeScreen(
 //                                        else -> { false }
 //                                    }
 //                                }
-                            )
-                            SwipeToDismiss(
-                                state = dismissState,
-                                modifier = Modifier.animateItemPlacement(),
-                                directions = setOf(
-                                    DismissDirection.EndToStart
-                                ),
-                                dismissThresholds = { direction ->
-                                    FractionalThreshold(
-                                        if (direction == DismissDirection.EndToStart) 0.4f else 0.05f
-                                    )
-                                },
-                                background = {
-                                    val color by animateColorAsState(
-                                        when (dismissState.targetValue) {
-                                            DismissValue.Default -> MaterialTheme.colorScheme.background
-                                            else -> Color.Red
-                                        }
-                                    )
+                        )
+                        SwipeToDismiss(
+                            state = dismissState,
+                            modifier = Modifier.animateItemPlacement(),
+                            directions = setOf(
+                                DismissDirection.EndToStart
+                            ),
+                            dismissThresholds = { direction ->
+                                FractionalThreshold(
+                                    if (direction == DismissDirection.EndToStart) 0.4f else 0.05f
+                                )
+                            },
+                            background = {
+                                val color by animateColorAsState(
+                                    when (dismissState.targetValue) {
+                                        DismissValue.Default -> MaterialTheme.colorScheme.background
+                                        else -> Color.Red
+                                    }
+                                )
 
-                                    Card(
-                                        modifier = Modifier.fillMaxSize(),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = color,
-                                        ),
-                                        elevation = CardDefaults.cardElevation(0.dp)
+                                Card(
+                                    modifier = Modifier.fillMaxSize(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = color,
+                                    ),
+                                    elevation = CardDefaults.cardElevation(0.dp)
+                                ) {
+                                    Row(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .padding(30.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
                                     ) {
-                                        Row(
-                                            Modifier
-                                                .fillMaxSize()
-                                                .padding(30.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
+                                        IconButton(
+                                            modifier = Modifier
+                                                .size(50.dp)
+                                                .weight(1f),
+                                            onClick = {
+                                                scope.launch { dismissState.reset() }
+                                            }
                                         ) {
-                                            IconButton(
-                                                modifier = Modifier
-                                                    .size(50.dp)
-                                                    .weight(1f),
-                                                onClick = {
-                                                    scope.launch { dismissState.reset() }
-                                                }
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.Refresh,
-                                                    contentDescription = "refresh",
-                                                    tint = Color.White,
-                                                )
+                                            Icon(
+                                                Icons.Default.Refresh,
+                                                contentDescription = "refresh",
+                                                tint = Color.White,
+                                            )
+                                        }
+                                        IconButton(
+                                            modifier = Modifier
+                                                .size(50.dp)
+                                                .weight(1f),
+                                            onClick = {
+                                                viewModel.deleteHabit(habit)
                                             }
-                                            IconButton(
-                                                modifier = Modifier
-                                                    .size(50.dp)
-                                                    .weight(1f),
-                                                onClick = {
-                                                    viewModel.deleteHabit(habit)
-                                                }
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.Delete,
-                                                    contentDescription = "delete",
-                                                    tint = Color.White,
-                                                )
-                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "delete",
+                                                tint = Color.White,
+                                            )
                                         }
                                     }
                                 }
-                            ) {
-                                HabitItem(
-                                    title = habit.title,
-                                    daysGoal = habit.daysGoal,
-                                    status = habit.status,
-                                    notifyTime = habit.notifyTime
-                                )
                             }
-                        }
-                        item {
-                            Spacer(modifier = Modifier.height(80.dp))
+                        ) {
+                            HabitItem(
+                                onClick = {
+                                    navController.currentBackStackEntry?.savedStateHandle?.set(
+                                        key = "habit",
+                                        value = it
+                                    )
+                                    navController.navigate(Screen.Detail.route)
+                                },
+                                habit = habit
+                            )
                         }
                     }
                 }
             }
+
         }
     }
 }

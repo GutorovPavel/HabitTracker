@@ -37,15 +37,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             HabitTrackerTheme() {
 
-                val systemUiController = rememberSystemUiController()
-                val isDarkModeValue = isSystemInDarkTheme()
-                val isDarkMode = remember { mutableStateOf(isDarkModeValue) }
-                SideEffect {
-                    systemUiController.setStatusBarColor(
-                        color = Color.Transparent,
-                        darkIcons = !isDarkMode.value
-                    )
-                }
+//                val systemUiController = rememberSystemUiController()
+//                val isDarkModeValue = isSystemInDarkTheme()
+//                val isDarkMode = remember { mutableStateOf(isDarkModeValue) }
+//                SideEffect {
+//                    systemUiController.setStatusBarColor(
+//                        color = Color.Transparent,
+//                        darkIcons = !isDarkMode.value
+//                    )
+//                }
 
                 val screen by splashViewModel.startDestination
 
